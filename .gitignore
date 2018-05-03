@@ -25,6 +25,7 @@ docs/
 *.lst
 
 # Code::Blocks
+*.save
 *.cbp
 *.depend
 *.layout

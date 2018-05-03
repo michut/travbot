@@ -1,5 +1,27 @@
 module travian.structs;
 
+class VillageData
+{
+    uint id;
+    int x, y;
+    int population;
+    string name;
+    //TODO production type
+
+	Structure[40] structures;
+
+	uint warehouse;
+	uint granary;
+	uint[4] resources;
+	uint[4] production;
+
+	uint timestamp_last_resources_update;
+
+	Troops troops;
+	Troops[] reinforcements;
+	Troops reinforcements_animal;
+};
+
 struct Troops
 {
     enum: uint

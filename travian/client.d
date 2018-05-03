@@ -55,7 +55,17 @@ class Travian
 
 	void loop()
 	{
-
+	    /*
+        resource managment
+            village1 build
+            village2 build
+            upgrade (academy, blacksmith, armorsmith)
+            troops build (infantry, cavalery, siege, new village)
+        troop managment
+            farmlist
+        collect data
+            farmlist update
+        */
 	}
 
 	bool profile()

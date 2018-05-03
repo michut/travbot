@@ -8,18 +8,6 @@ import luad.all;
 import std.range;
 import std.datetime;
 
-struct VillageData
-{
-	Structure[40] structures;
-
-	uint warehouse;
-	uint granary;
-	uint[4] resources;
-	uint[4] production;
-
-	uint[] troops;
-}
-
 class Village : Network, NetworkCallbacks
 {
     //TODO: vytvorit tridu pro account variables misto static v teto tride

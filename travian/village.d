@@ -1,6 +1,6 @@
 module travian.village;
 
-import travian.structures;
+import travian.structs;
 import travian.network;
 
 import std.stdio;

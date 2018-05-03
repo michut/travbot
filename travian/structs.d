@@ -1,3 +1,53 @@
+module travian.structs;
+
+struct Troops
+{
+    enum: uint
+    {
+        Phalanx = 1,
+        Swordsman = 2,
+        Pathfinder = 3,
+        Theutates_Thunder = 4,
+        Druidrider = 5,
+        Haeduan = 6,
+
+        Clubswinger = 1,
+        Spearman = 2,
+        Axeman = 3,
+        Scout = 4,
+        Paladin = 5,
+        Teutonic_Knight = 6,
+
+        Legionnaire = 1,
+        Praetorian = 2,
+        Imperian = 3,
+        Equites_Legati = 4,
+        Equites_Imperatoris = 5,
+        Equites_Caesaris = 6,
+
+        Ram = 7,
+        Catapult = 8,
+        Senator = 9,
+        Chief = 9,
+        Chieftain = 9,
+        Settler = 10,
+    };
+
+    uint[10] m_troops;
+
+    uint opIndex(uint index)
+    {
+        assert(0 < index && index <= 10);
+        return m_troops[index-1]; // shift to zero-based index
+    }
+
+    uint opIndexAssign(uint value, uint index)
+    {
+        assert(0 < index && index <= 10);
+        return m_troops[index-1] = value; // shift to zero-based index
+    };
+};
+
 class Structure
 {
 	uint m_type;

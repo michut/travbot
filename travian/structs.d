@@ -1,5 +1,12 @@
 module travian.structs;
 
+enum Tribe: uint
+{
+    Romans = 0,
+    Gauls = 1,
+    Teutons = 2
+};
+
 class VillageData
 {
     uint id;
@@ -8,8 +15,15 @@ class VillageData
     string name;
     //TODO production type
 
-	Structure[40] structures;
+	float range_from(VillageData destination)
+	{
+	    import std.math;
+	    float x_diff = this.x - destination.x;
+	    float y_diff = this.y - destination.y;
+	    return sqrt(x_diff*x_diff + y_diff*y_diff);
+	}
 
+	Structure[40] structures;
 	uint warehouse;
 	uint granary;
 	uint[4] resources;
@@ -22,52 +36,153 @@ class VillageData
 	Troops reinforcements_animal;
 };
 
+class Enemy : VillageData
+{
+	uint timestamp_last_troops_update;
+
+    //TODO owner with his activity log
+
+    import std.typecons : Nullable;
+	Nullable!uint cranny;
+	bool is_safe_to_scout = false;
+	bool is_safe_to_farm = false;
+};
+
+enum Troop: uint
+{
+    Phalanx = 1,
+    Swordsman = 2,
+    Pathfinder = 3,
+    Theutates_Thunder = 4,
+    Druidrider = 5,
+    Haeduan = 6,
+
+    Clubswinger = 1,
+    Spearman = 2,
+    Axeman = 3,
+    Scout = 4,
+    Paladin = 5,
+    Teutonic_Knight = 6,
+
+    Legionnaire = 1,
+    Praetorian = 2,
+    Imperian = 3,
+    Equites_Legati = 4,
+    Equites_Imperatoris = 5,
+    Equites_Caesaris = 6,
+
+    Ram = 7,
+    Catapult = 8,
+    Senator = 9,
+    Chief = 9,
+    Chieftain = 9,
+    Settler = 10,
+};
+
 struct Troops
 {
-    enum: uint
-    {
-        Phalanx = 1,
-        Swordsman = 2,
-        Pathfinder = 3,
-        Theutates_Thunder = 4,
-        Druidrider = 5,
-        Haeduan = 6,
-
-        Clubswinger = 1,
-        Spearman = 2,
-        Axeman = 3,
-        Scout = 4,
-        Paladin = 5,
-        Teutonic_Knight = 6,
-
-        Legionnaire = 1,
-        Praetorian = 2,
-        Imperian = 3,
-        Equites_Legati = 4,
-        Equites_Imperatoris = 5,
-        Equites_Caesaris = 6,
-
-        Ram = 7,
-        Catapult = 8,
-        Senator = 9,
-        Chief = 9,
-        Chieftain = 9,
-        Settler = 10,
-    };
-
     uint[10] m_troops;
 
-    uint opIndex(uint index)
+    uint opIndex(Troop index)
     {
         assert(0 < index && index <= 10);
         return m_troops[index-1]; // shift to zero-based index
     }
 
-    uint opIndexAssign(uint value, uint index)
+    uint opIndexAssign(uint value, Troop index)
     {
         assert(0 < index && index <= 10);
         return m_troops[index-1] = value; // shift to zero-based index
     };
+
+    uint where_to_build(Troop id)
+	{
+	    alias T = Troop;
+        Tribe tribe = Tribe.Teutons; // TODO: precte nejaky config pro cely account a vrati tribe
+
+        switch(tribe)
+        {
+            default: throw new Exception("error: unknown tribe");
+            case Tribe.Romans:
+                switch(id) {
+                    default: throw new Exception("error: unknown troop type");
+                    case T.Legionnaire:
+                    case T.Praetorian:
+                    case T.Imperian:
+                        return Structure.Barracks;
+                    case T.Equites_Legati:
+                    case T.Equites_Imperatoris:
+                    case T.Equites_Caesaris:
+                        return Structure.Stable;
+                    case T.Ram:
+                    case T.Catapult:
+                        return Structure.Siege_Workshop;
+                    case T.Senator:
+                    case T.Settler:
+                        return Structure.Residence;
+                }
+            break;
+            case Tribe.Gauls:
+                switch(id) {
+                    default: throw new Exception("error: unknown troop type");
+                    case T.Phalanx:
+                    case T.Swordsman:
+                        return Structure.Barracks;
+                    case T.Pathfinder:
+                    case T.Theutates_Thunder:
+                    case T.Druidrider:
+                    case T.Haeduan:
+                        return Structure.Stable;
+                    case T.Ram:
+                    case T.Catapult:
+                        return Structure.Siege_Workshop;
+                    case T.Chieftain:
+                    case T.Settler:
+                        return Structure.Residence;
+                }
+            break;
+            case Tribe.Teutons:
+                switch(id) {
+                    default: throw new Exception("error: unknown troop type");
+                    case T.Clubswinger:
+                    case T.Spearman:
+                    case T.Axeman:
+                    case T.Scout:
+                        return Structure.Barracks;
+                    case T.Paladin:
+                    case T.Teutonic_Knight:
+                        return Structure.Stable;
+                    case T.Ram:
+                    case T.Catapult:
+                        return Structure.Siege_Workshop;
+                    case T.Chief:
+                    case T.Settler:
+                        return Structure.Residence;
+                }
+            break;
+        }
+	}
+
+    Troops filter_by_structure(uint structure_id)
+    {
+        alias S = Structure;
+        import std.algorithm: canFind;
+        assert([S.Barracks, S.Stable, S.Siege_Workshop, S.Residence, S.Palace].canFind(structure_id));
+
+        Troops troops_filtered;
+        foreach(Troop troop_id, uint troop_count; m_troops) {
+            if(troop_count > 0 && where_to_build(troop_id) == structure_id) {
+                troops_filtered[troop_id] = troop_count;
+            }
+        }
+        return troops_filtered;
+    }
+
+    uint sum()
+    {
+        import std.algorithm: reduce;
+        return reduce!((a, b) => a + b)(0, m_troops);
+    }
 };
 
 class Structure
@@ -188,7 +303,19 @@ class Structure
 		m_structure_name["Warrior Dealer"] = 			Structure.Warrior_Dealer;
 	}
 
-	static uint id_of(string name)
+	this( string type, uint level )
+	{
+		m_level = level;
+		m_type = id_of_structure(type);
+	}
+
+	this( uint type, uint level )
+	{
+		m_level = level;
+		m_type = type;
+	}
+
+	static uint id_of_structure(string name)
 	{
         if( name == "Wall" )
         {
@@ -197,17 +324,5 @@ class Structure
             return wall[tribe];
         }
 		return m_structure_name[name];
-	}
-
-	this( string type, uint level )
-	{
-		m_level = level;
-		m_type = id_of(type);
-	}
-
-	this( uint type, uint level )
-	{
-		m_level = level;
-		m_type = type;
 	}
 };

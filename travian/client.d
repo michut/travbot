@@ -12,17 +12,15 @@ import std.algorithm;
 class Travian
 {
 	// TODO: account info  common to all villages saved to file
-	enum Tribe: uint
-	{
-		Romans = 0,
-		Gauls = 1,
-		Teutons = 2
-	};
-	Tribe tribe;
+	//Tribe tribe;
 
-	Network network;
+	Networking network;
 	Village[] villages;
 	Village *village_active;
+
+	Village*[] m_scout; //TODO scan village
+	Village*[] m_farmer; //TODO send troops
+	Village*[] m_hammer; //TODO send troops and or ram+catapults to stop enemy resistance
 
 	this()
 	{
@@ -32,8 +30,8 @@ class Travian
 
 	void test()
 	{
-        village_active.login();
-        village_active.logout();
+        village_active.net.login();
+        village_active.net.logout();
 
         //lua.get!LuaFunction("login")();
 

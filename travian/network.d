@@ -1,5 +1,7 @@
 module travian.network;
 
+import travian.structs: Troops;
+
 import std.stdio;
 import luad.all;
 import luad.c.all;
@@ -9,7 +11,7 @@ import std.string: join;
 
 auto random = Random(515674132);
 
-interface NetworkCallbacks
+interface INetworkingCallbacks
 {
     void cb_update_structure( uint id, string type, uint level );
     void cb_update_resources( uint warehouse, uint granary, uint[4] resources, uint[4] production );
@@ -17,20 +19,20 @@ interface NetworkCallbacks
     void cb_update_time_dilation( uint h, uint m, uint s );
 }
 
-class Network : NetworkCallbacks
+class Networking : INetworkingCallbacks
 {
     void cb_update_structure( uint id, string type, uint level ) {}
     void cb_update_resources( uint warehouse, uint granary, uint[4] resources, uint[4] production ) {}
     void cb_update_build_cooldown( uint h, uint m, uint s ) {}
     void cb_update_time_dilation( uint h, uint m, uint s ) {}
 
-    private static Network m_singleton;
+    private static Networking m_singleton;
 
 	static this() {
-		m_singleton = new Network;
+		m_singleton = new Networking;
 	}
 
-	static Network opCall() {
+	static Networking opCall() {
 		return m_singleton;
 	}
 
@@ -106,16 +108,16 @@ class Network : NetworkCallbacks
     uint village2_build(uint id, uint building_type) {
         return lua.get!LuaFunction("village2_build").call!int(id, building_type);
     }
-    void village2_troops_create(uint id, uint[10] troop_count_array) {
+    void village2_troops_create(uint id, Troops troop_count_array) {
         lua.get!LuaFunction("village2_troops_create")(id, troop_count_array);
     }
     void village2_troops_upgrade(uint id, uint troop_type) {
         lua.get!LuaFunction("village2_troops_upgrade")(id, troop_type);
     }
-    void village2_troops_send(uint player_id, int x, int y, uint attack_type, uint[10] troop_count_array) {
+    void village2_troops_send(uint player_id, int x, int y, uint attack_type, Troops troop_count_array) {
         lua.get!LuaFunction("village2_troops_send")(player_id, x, y, attack_type, troop_count_array);
     }
-    void village2_troops_return(uint id, uint[10] troop_count_array) {
+    void village2_troops_return(uint id, Troops troop_count_array) {
         lua.get!LuaFunction("village2_troops_return")(id, troop_count_array);
     }
 
@@ -134,7 +136,7 @@ class Network : NetworkCallbacks
     void sleep( int min, int max )
 	{
         import core.thread;
-        Thread.sleep( dur!("msecs")( uniform(min, max+1, random) ) );
+        //Thread.sleep( dur!("msecs")( uniform(min, max+1, random) ) );
     }
 
 	string parse_query_string(LuaObject[] params)

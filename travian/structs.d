@@ -7,6 +7,71 @@ enum Tribe: uint
     Teutons = 2
 };
 
+class Resources
+{
+    long[4] m_resources;
+    alias m_resources this;
+
+    this()
+    {
+        this(0,0,0,0);
+    }
+
+    this( long wood, long clay, long iron, long crop )
+    {
+        m_resources = [wood, clay, iron, crop];
+    }
+
+    this( long[4] rhs )
+    {
+        this( rhs[0], rhs[1], rhs[2], rhs[3] );
+    }
+
+    Resources opAssign(long[4] rhs)
+    {
+        m_resources = rhs;
+        return this;
+    }
+
+    long opIndexAssign(long value, uint index)
+    {
+        assert(0 <= index && index < 4);
+        return m_resources[index] = value;
+    };
+
+    long opIndexAssign(int value, uint index)
+    {
+        return opIndexAssign(cast(long)value, index);
+    };
+
+    Resources opBinary(string op)(long[4] rhs)
+    {
+        static if (op == "+")
+            return [ m_resources[0]+rhs[0], m_resources[1]+rhs[1], m_resources[2]+rhs[2], m_resources[3]+rhs[3] ];
+        else static if (op == "-")
+            return [ m_resources[0]-rhs[0], m_resources[1]-rhs[1], m_resources[2]-rhs[2], m_resources[3]-rhs[3] ];
+        else static if (op == "*")
+            return [ m_resources[0]*rhs[0], m_resources[1]*rhs[1], m_resources[2]*rhs[2], m_resources[3]*rhs[3] ];
+        else static assert(0, "Operator "~op~" not implemented");
+    }
+
+    Resources opBinary(string op)(double rhs) if (op == "*")
+    {
+        import std.conv;
+        import std.math;
+
+        Resources temp = new Resources;
+        temp = m_resources;
+
+        foreach(ref resource; temp)
+        {
+            double cost = resource * rhs;
+            resource = to!long(round(cost / 5.0)) * 5L; //divisible by 5
+        }
+        return temp;
+    }
+};
+
 class VillageData
 {
     uint id;
@@ -116,7 +181,7 @@ struct Troops
                         return Structure.Stable;
                     case T.Ram:
                     case T.Catapult:
-                        return Structure.Siege_Workshop;
+                        return Structure.Workshop;
                     case T.Senator:
                     case T.Settler:
                         return Structure.Residence;
@@ -135,7 +200,7 @@ struct Troops
                         return Structure.Stable;
                     case T.Ram:
                     case T.Catapult:
-                        return Structure.Siege_Workshop;
+                        return Structure.Workshop;
                     case T.Chieftain:
                     case T.Settler:
                         return Structure.Residence;
@@ -154,7 +219,7 @@ struct Troops
                         return Structure.Stable;
                     case T.Ram:
                     case T.Catapult:
-                        return Structure.Siege_Workshop;
+                        return Structure.Workshop;
                     case T.Chief:
                     case T.Settler:
                         return Structure.Residence;
@@ -167,7 +232,7 @@ struct Troops
     {
         alias S = Structure;
         import std.algorithm: canFind;
-        assert([S.Barracks, S.Stable, S.Siege_Workshop, S.Residence, S.Palace].canFind(structure_id));
+        assert([S.Barracks, S.Stable, S.Workshop, S.Residence, S.Palace].canFind(structure_id));
 
         Troops troops_filtered;
         foreach(Troop troop_id, uint troop_count; m_troops) {
@@ -235,12 +300,13 @@ class Structure
 		Embassy = 				18,
 		Barracks = 				19,
 		Stable = 				20,
-		Siege_Workshop = 		21,
+		Workshop = 		        21,
 		Academy = 				22,
 		Cranny = 				23,
 		Town_Hall = 			24,
 		Residence = 			25,
 		Palace = 				26,
+		Treasury =              27,
 		Trade_Office = 			28,
 		Great_Barracks = 		29,
 		Great_Stable = 			30,
@@ -255,7 +321,6 @@ class Structure
 		Great_Granary = 		39,
 		World_Wonder = 			40,
 		Horse_Drinking_Pool = 	41,
-		Warrior_Dealer = 		42,
 	};
 
 	static this()
@@ -267,8 +332,10 @@ class Structure
 		m_structure_name["Cropland"] = 					Structure.Crop;
 		m_structure_name["Sawmill"] =					Structure.Sawmill;
 		m_structure_name["Brickworks"] = 				Structure.Brickworks;
+		m_structure_name["Brickyard"] = 				Structure.Brickworks;
 		m_structure_name["Iron Foundry"] = 				Structure.Iron_Foundry;
 		m_structure_name["Flour Mill"] = 				Structure.Flour_Mill;
+		m_structure_name["Grain Mill"] = 				Structure.Flour_Mill;
 		m_structure_name["Bakery"] =					Structure.Bakery;
 		m_structure_name["Warehouse"] = 				Structure.Warehouse;
 		m_structure_name["Granary"] = 					Structure.Granary;
@@ -282,7 +349,8 @@ class Structure
 		m_structure_name["Embassy"] = 					Structure.Embassy;
 		m_structure_name["Barracks"] = 					Structure.Barracks;
 		m_structure_name["Stable"] = 					Structure.Stable;
-		m_structure_name["Siege Workshop"] = 			Structure.Siege_Workshop;
+		m_structure_name["Workshop"] = 			        Structure.Workshop;
+		m_structure_name["Siege Workshop"] = 			Structure.Workshop;
 		m_structure_name["Academy"] = 					Structure.Academy;
 		m_structure_name["Cranny"] = 					Structure.Cranny;
 		m_structure_name["Town Hall"] = 				Structure.Town_Hall;
@@ -299,8 +367,9 @@ class Structure
 		m_structure_name["Great Warehouse"] = 			Structure.Great_Warehouse;
 		m_structure_name["Great Granary"] = 			Structure.Great_Granary;
 		m_structure_name["World Wonder"] = 				Structure.World_Wonder;
+		m_structure_name["Wonder of the World"] = 	    Structure.World_Wonder;
 		m_structure_name["Horse Drinking Pool"] = 		Structure.Horse_Drinking_Pool;
-		m_structure_name["Warrior Dealer"] = 			Structure.Warrior_Dealer;
+		m_structure_name["Horse Drinking Trough"] = 	Structure.Horse_Drinking_Pool;
 	}
 
 	this( string type, uint level )

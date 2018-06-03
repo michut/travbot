@@ -49,7 +49,7 @@ class Village : VillageData
 		m_plan[Structure.Embassy] = 				0;
 		m_plan[Structure.Barracks] = 				29;
 		m_plan[Structure.Stable] = 					30;
-		m_plan[Structure.Siege_Workshop] = 			25;
+		m_plan[Structure.Workshop] = 			    25;
 		m_plan[Structure.Academy] = 				32;
 		m_plan[Structure.Cranny] = 					0;
 		m_plan[Structure.Town_Hall] = 				0;
@@ -69,7 +69,6 @@ class Village : VillageData
 		m_plan[Structure.Great_Granary] = 			0;
 		m_plan[Structure.World_Wonder] = 			0;
 		m_plan[Structure.Horse_Drinking_Pool] = 	0;
-		m_plan[Structure.Warrior_Dealer] = 			0;
 	}
 
     class VillageNetworking : Networking, INetworkingCallbacks
@@ -253,7 +252,7 @@ class Village : VillageData
         override bool execute()
         {
             alias S = Structure;
-            uint[] structures = [S.Barracks, S.Stable, S.Siege_Workshop, S.Residence];
+            uint[] structures = [S.Barracks, S.Stable, S.Workshop, S.Residence];
 
             foreach(structure_id; structures)
             {
